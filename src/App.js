@@ -9,43 +9,77 @@ import cards from "./cards.json"
 class App extends Component {
 
   state = {
-    cards,
+    data: cards,
     score: 0,
     highScore: 0,
   };
 
-  // game functions here
+  componentDidMount() {
+    this.setState({ data: this.shuffleData(this.state.data) });
+  };
+
+  handleCorrectGuess = newData => {
+    // deconstruct state variables 
+    const { highScore, score } = this.state;
+    // increment the score
+    const newScore = score + 1;
+    // set the high score = whichever is greater, newScore or existing highScore
+    const newHighScore = Math.max(newScore, highScore);
+
+    // update the state
+    this.setState({
+      data: this.shuffleData(newData),
+      score: newScore,
+      highScore: newHighScore
+    });
+  };
+
+  handleIncorrectGuess = data => {
+    this.setState({
+      data: this.resetData(data),
+      score: 0
+    });
+  };
+
+  resetData = data => {
+    const resetData = data.map(item => ({ ...item, hasBeenClicked: false }));
+    return this.shuffleData(resetData);
+  };
+
+  shuffleData = data => {
+    let i = data.length - 1;
+    while (i > 0) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = data[i];
+      data[i] = data[j];
+      data[j] = temp;
+      i--;
+    }
+    return data;
+  };
+
   handleCardClick = id => {
-    // loop over all the cards
-    this.state.cards.forEach(card => {
-      // if the id of the card clicked matches the id of the card in the array
-      if (card.id === id) {
-        // check to see if the card has been clicked on
-        if (card.hasBeenClicked) {
-          this.gameOver();
-        } else {
-          // flip flag variable on that card
-          card.hasBeenClicked = true;
-          const newScore = this.state.score + 1
-          // increment the score
-          this.setState({ score: newScore});
-          // check to see if the score is higher then the current high score
-          if (this.state.score > this.state.highScore) {
-            const newHighScore = this.state.score 
-            // update the highScore to be equal to the current score
-            this.setState({ highScore: this.state.score });
-          }
-          // shuffle the cards
-          this.state.cards.sort(() => Math.random() - 0.5);
+    let guessedCorrectly = false;
+    const newData = this.state.data.map(item => {
+      // copy the existing item data
+      const newItem = { ...item };
+      // check if the newItem ID matches the ID that was clicked
+      if (newItem.id === id) {
+        // check to see if it has not been clicked yet this game
+        if (!newItem.hasBeenClicked) {
+          newItem.hasBeenClicked = true;
+          guessedCorrectly = true;
         }
       }
+      return newItem;  
     });
+    guessedCorrectly 
+      ? this.handleCorrectGuess(newData)
+      : this.handleIncorrectGuess(newData)
+
   }
 
-  gameOver = () => {
-    console.log('Game Over!');
-  }
-
+  
   render() {
     return (
       <Wrapper>
@@ -55,7 +89,7 @@ class App extends Component {
         >Click it!
         </Header>
         {/* map over the cards */}
-        {this.state.cards.map(card => (
+        {this.state.data.map(card => (
           <Card
             key={card.id}
             id={card.id}
