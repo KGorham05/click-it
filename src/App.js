@@ -26,10 +26,12 @@ class App extends Component {
         } else {
           // flip flag variable on that card
           card.hasBeenClicked = true;
+          const newScore = this.state.score + 1
           // increment the score
-          this.setState({ score: this.state.score + 1 });
+          this.setState({ score: newScore});
           // check to see if the score is higher then the current high score
           if (this.state.score > this.state.highScore) {
+            const newHighScore = this.state.score 
             // update the highScore to be equal to the current score
             this.setState({ highScore: this.state.score });
           }
@@ -41,7 +43,7 @@ class App extends Component {
   }
 
   gameOver = () => {
-    console.log('Game Over!')
+    console.log('Game Over!');
   }
 
   render() {
@@ -59,6 +61,7 @@ class App extends Component {
             id={card.id}
             image={card.image}
             name={card.name}
+            handleCardClick={this.handleCardClick}
           />
         ))}
       </Wrapper>
